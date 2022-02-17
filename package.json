@@ -1,0 +1,37 @@
+{
+  "name": "desafio-modulo-7",
+  "version": "1.0.0",
+  "repository": "git@github.com:JoaquinGiacusa/desafio-modulo-7.git",
+  "author": "JoaquinGiacusa <joaquingiacusa.dev@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "@types/node": "^17.0.18",
+    "@vaadin/router": "^1.7.4",
+    "algoliasearch": "^4.12.1",
+    "cloudinary": "^1.28.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.0",
+    "dropzone": "^6.0.0-beta.2",
+    "express": "^4.17.2",
+    "jsonwebtoken": "^8.5.1",
+    "nodemon": "^2.0.15",
+    "parcel": "^2.3.1",
+    "pg": "^8.7.3",
+    "pg-hstore": "^2.3.4",
+    "sequelize": "^6.16.1",
+    "typescript": "^4.5.5"
+  },
+  "scripts": {
+    "sync": "ts-node ./be-src/sync.ts",
+    "dev:fe": "parcel serve ./fe-src/index.html",
+    "build:fe": "parcel build ./fe-src/index.html",
+    "dev:be": "nodemon --watch ./be-src/index.ts --exec ts-node ./be-src/dev.ts",
+    "build:be": "tsc",
+    "build": "yarn build:fe && yarn build:be",
+    "start": "node ./be-dist/index.js"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.13",
+    "path-browserify": "^1.0.1"
+  }
+}
