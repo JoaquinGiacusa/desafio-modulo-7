@@ -54,7 +54,7 @@ customElements.define(
 
       style.textContent = `
       .header {
-          height: 60px;
+          height: 8vh;
           background-color: #398ab9;
           padding:0px 20px;
           display: flex;

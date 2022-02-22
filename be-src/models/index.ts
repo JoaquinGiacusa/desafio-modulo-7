@@ -1,11 +1,18 @@
-// import { User } from "./user";
-// import { Product } from "./product";
-// import { Auth } from "./auth";
+import { User } from "./user";
+import { Auth } from "./auth";
+import { Pet } from "./pet";
+import { Report } from "./report";
 
-// // ejemplo de módulo que importa a todos los modelos
-// // y los vincula
+// ejemplo de módulo que importa a todos los modelos
+// y los vincula
 
-// User.hasMany(Product);
-// Product.belongsTo(User);
+User.hasOne(Auth);
+Auth.belongsTo(User);
 
-// export { User, Product, Auth };
+User.hasMany(Pet);
+Pet.belongsTo(User);
+
+Pet.hasMany(Report);
+Report.belongsTo(Pet);
+
+export { User, Auth, Pet, Report };

@@ -9,43 +9,156 @@ customElements.define(
     }
     connectedCallback() {
       this.render();
-      //const button = document.querySelector(".button");
-      //   button.addEventListener("click", () => {
-      //     console.log("hice click");
-      //     state.getDev();
-      //     Router.go("/ingresar");
+      const ubiButton = this.querySelector(".button");
+      const home = this.querySelector(".home");
+      const cs = state.getState();
+
+      function getMyLoc(callback?) {
+        navigator.geolocation.getCurrentPosition(function (pos) {
+          //return pos.coords.latitude, pos.coords.longitude;
+
+          cs.geoLoc.lat = pos.coords.latitude;
+          cs.geoLoc.lng = pos.coords.longitude;
+          state.setState(cs);
+          callback();
+        });
+      }
+
+      function checkGeo() {
+        if (cs.petsNear == "") {
+          console.log("no hay mascotas cerca");
+        } else {
+          home.innerHTML = `
+          <header-el></header-el>
+          <div class="container">
+          <div class="container-content">
+          </div>
+          </div>
+          `;
+        }
+      }
+
+      navigator.permissions
+        .query({ name: "geolocation" })
+        .then(function (result) {
+          if (result.state === "granted") {
+            getMyLoc(() => {
+              checkGeo();
+            });
+          }
+          //si no tengo la loc:
+          else if (result.state === "prompt") {
+            ubiButton.addEventListener("click", () => {
+              getMyLoc(() => {
+                checkGeo();
+              });
+            });
+
+            // if (cs.petsNear == "") {
+            //   console.log("no hay mascotas cerca");
+            // } else {
+            //   console.log("array de mascotas");
+
+            //   //home.remove();
+            //   home.innerHTML = `
+            //     <header-el></header-el>
+            //     <div class="container">
+            //     <div class="container-content">
+            //     </div>
+            //   </div>
+            //     `;
+            // }
+          }
+          // Don't do anything if the permission was denied.
+        });
+
+      // if (navigator.geolocation.getCurrentPosition.name == "") {
+      //   const ubiButton = this.querySelector(".button");
+
+      //   ubiButton.addEventListener("click", async () => {
+      //     navigator.geolocation.getCurrentPosition(function (pos) {
+      //       //return pos.coords.latitude, pos.coords.longitude;
+
+      //       cs.geoLoc.lat = pos.coords.latitude;
+      //       cs.geoLoc.lng = pos.coords.longitude;
+      //       state.setState(cs);
+      //     });
+      //     if (cs.petsNear == "") {
+      //       console.log("no hay mascotas cerca");
+      //     } else {
+      //       console.log("array de mascotas");
+      //       const home = this.querySelector(".home");
+      //       //home.remove();
+
+      //       home.innerHTML = `
+      //       <header-el></header-el>
+      //       <div class="container">
+      //       <div class="container-content">
+
+      //       </div>
+      //     </div>
+      //       `;
+      //     }
       //   });
+      // } else {
+      // }
     }
     render() {
       const style = document.createElement("style");
 
       this.innerHTML = `
-      <header-el></header-el>
       <div class="home">
-      <form class="form">
-        <label>
-          <h2>Nombre</h2>
-          <input type="text" class="input" name="fullname" />
-        </label>
-        <label>
-          <h2>Bio</h2>
-          <textarea name="bio" class="bio"></textarea>
-        </label>
-        <div class="profile-picture-container">
-          <img class="profile-picture" />
-          <h3>Arrastra tu foto aqui</h3>
+      <header-el></header-el>
+        <div class="container">
+          <div class="container-content">
+            <h1 class="titulo">Mascotas perdidas cerca tuyo</h1>
+            <p class="desc">Para ver las mascotas reportadas cerca tuyo necesitamos permiso para conocer tu ubicación.</p>
+            <button class="button">Dar mi ubicación</button>
+          </div>
         </div>
-        <br />
-        <div>
-          <button>Guardar Perfil</button>
-        </div>
-      </form>
-    </div>
+      </div>
       `;
 
       style.textContent = `
       .home{
+        height: 100vh;
+        font-family: 'Roboto', sans-serif;
+      }
+
+      .container{
+        height: 92vh;
+        
+        margin: 0 auto;
         background-color: #EEEEEE;
+        max-width: 600px;
+      }
+
+      .container-content{
+        display: flex;
+        padding:50px;
+        align-items: center;
+        justify-content: space-between;
+        flex-direction:column;
+        min-height: 400px;
+      }
+
+      .titulo{
+        margin:0;
+        font-size:40px;
+      }
+
+      .desc{
+        font-size:20px;
+      }
+
+      .button{
+        background-color: #398AB9;
+        font-family: 'Roboto', sans-serif;
+        font-size:30px;
+        border: solid 2px black;
+        border-radius: 4px;
+        width:100%;
+        max-width: 350px;
       }
     `;
 

@@ -4,6 +4,11 @@ export const state = {
   data: {
     fullName: "",
     email: "",
+    geoLoc: {
+      lat: "",
+      lng: "",
+    },
+    petsNear: "asd",
   },
   listeners: [],
 
@@ -34,6 +39,19 @@ export const state = {
     cs.fullName = fullName;
     this.setState(cs);
   },
+
+  // getMyLoc(callback?) {
+  //   const cs = this.getState();
+
+  //   const coor = navigator.geolocation.getCurrentPosition(function (pos) {
+  //     //return pos.coords.latitude, pos.coords.longitude;
+
+  //     cs.geoLoc.lat = pos.coords.latitude;
+  //     cs.geoLoc.lng = pos.coords.longitude;
+  //     state.setState(cs);
+  //   });
+  //   callback();
+  // },
 
   setEmail(email: string) {},
 };
