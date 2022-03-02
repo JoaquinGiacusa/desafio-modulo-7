@@ -1,4 +1,5 @@
 import { Router } from "@vaadin/router";
+import { timeEnd } from "console";
 import { state } from "../../state";
 
 customElements.define(
@@ -9,14 +10,12 @@ customElements.define(
     }
     connectedCallback() {
       this.render();
+      const cs = state.getState();
       const ubiButton = this.querySelector(".button");
       const home = this.querySelector(".home");
-      const cs = state.getState();
 
       function getMyLoc(callback?) {
         navigator.geolocation.getCurrentPosition(function (pos) {
-          //return pos.coords.latitude, pos.coords.longitude;
-
           cs.geoLoc.lat = pos.coords.latitude;
           cs.geoLoc.lng = pos.coords.longitude;
           state.setState(cs);
@@ -24,15 +23,44 @@ customElements.define(
         });
       }
 
-      function checkGeo() {
+      function createCard(petsColl) {
+        const cards = [];
+        for (const pet of petsColl) {
+          const petName = pet.name;
+          const petImgUrl = pet.imageURL;
+          const petId = pet.objectID;
+          //console.log("petId", petId);
+
+          const cardEl =
+            "<card-el " +
+            "name=" +
+            petName +
+            " imageURL=" +
+            petImgUrl +
+            " petId=" +
+            petId +
+            "></card-el>";
+
+          cards.push(cardEl);
+        }
+
+        return cards.join("");
+      }
+
+      async function checkPets() {
         if (cs.petsNear == "") {
-          console.log("no hay mascotas cerca");
+          home.innerHTML = `
+          <h2>No hay mascotas cerca de tu ubicacion actual</h2>
+          `;
         } else {
           home.innerHTML = `
           <header-el></header-el>
           <div class="container">
-          <div class="container-content">
-          </div>
+            <div class="container-content">
+              <div class="cards"> 
+              ${createCard(cs.petsNear)}
+              </div>
+            </div>
           </div>
           `;
         }
@@ -41,67 +69,25 @@ customElements.define(
       navigator.permissions
         .query({ name: "geolocation" })
         .then(function (result) {
+          //si tengo ya el permiso de loc
           if (result.state === "granted") {
             getMyLoc(() => {
-              checkGeo();
+              state.getNearPets().then(() => {
+                checkPets();
+              });
             });
           }
           //si no tengo la loc:
           else if (result.state === "prompt") {
             ubiButton.addEventListener("click", () => {
               getMyLoc(() => {
-                checkGeo();
+                state.getNearPets().then(() => {
+                  checkPets();
+                });
               });
             });
-
-            // if (cs.petsNear == "") {
-            //   console.log("no hay mascotas cerca");
-            // } else {
-            //   console.log("array de mascotas");
-
-            //   //home.remove();
-            //   home.innerHTML = `
-            //     <header-el></header-el>
-            //     <div class="container">
-            //     <div class="container-content">
-            //     </div>
-            //   </div>
-            //     `;
-            // }
           }
-          // Don't do anything if the permission was denied.
         });
-
-      // if (navigator.geolocation.getCurrentPosition.name == "") {
-      //   const ubiButton = this.querySelector(".button");
-
-      //   ubiButton.addEventListener("click", async () => {
-      //     navigator.geolocation.getCurrentPosition(function (pos) {
-      //       //return pos.coords.latitude, pos.coords.longitude;
-
-      //       cs.geoLoc.lat = pos.coords.latitude;
-      //       cs.geoLoc.lng = pos.coords.longitude;
-      //       state.setState(cs);
-      //     });
-      //     if (cs.petsNear == "") {
-      //       console.log("no hay mascotas cerca");
-      //     } else {
-      //       console.log("array de mascotas");
-      //       const home = this.querySelector(".home");
-      //       //home.remove();
-
-      //       home.innerHTML = `
-      //       <header-el></header-el>
-      //       <div class="container">
-      //       <div class="container-content">
-
-      //       </div>
-      //     </div>
-      //       `;
-      //     }
-      //   });
-      // } else {
-      // }
     }
     render() {
       const style = document.createElement("style");
@@ -121,16 +107,14 @@ customElements.define(
 
       style.textContent = `
       .home{
-        height: 100vh;
         font-family: 'Roboto', sans-serif;
       }
 
-      .container{
-        height: 92vh;
-        
-        margin: 0 auto;
+      .container{ 
+       margin: 0 auto;
         background-color: #EEEEEE;
         max-width: 600px;
+        min-height: 92vh;
       }
 
       .container-content{
@@ -140,6 +124,11 @@ customElements.define(
         justify-content: space-between;
         flex-direction:column;
         min-height: 400px;
+      }
+
+      .cards{
+        display:grid;
+        gap: 30px;
       }
 
       .titulo{

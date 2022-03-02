@@ -15,13 +15,13 @@ customElements.define(
 
       style.textContent = `
       .blue-button {
-        color: white;
-        font-size: 35px;
         background-color: #398AB9;
-        border: 5px solid #1C658C;
-        border-radius: 5px;
-        width: 100%;
-        width: 280px;
+        font-family: 'Roboto', sans-serif;
+        font-size:30px;
+        border: solid 2px black;
+        border-radius: 4px;
+        width:100%;
+        max-width: 350px;
       }
       `;
 

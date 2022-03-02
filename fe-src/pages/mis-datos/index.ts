@@ -2,72 +2,61 @@ import { Router } from "@vaadin/router";
 import { state } from "../../state";
 
 customElements.define(
-  "sign-in",
+  "mis-datos",
   class extends HTMLElement {
     constructor() {
       super();
     }
     connectedCallback() {
-      this.render();
       const cs = state.getState();
-      const form = this.querySelector(".form-cont");
-      const contaier = this.querySelector(".content-cont");
 
-      async function renderPsw(contaier) {
-        contaier.innerHTML = `
-        
-        <h3 class="title">Ingresar</h3>
-        <form class="form-cont">
-          <label class="label"
-            >CONTASEÑA<input class="input" type="password" name="psw"
-          /></label>
-          <div class="button-cont">
-            <button class="button">Ingresar</button>
-          </div>
-        </form>
-      
-        `;
-        const form = contaier.querySelector(".form-cont");
+      this.render();
 
-        form.addEventListener("submit", (e) => {
-          e.preventDefault();
-          const target = e.target as any;
-          const pws = target.psw.value;
-
-          state.signIn(pws, () => {
-            Router.go(cs.lastPage);
-          });
-        });
-      }
-
-      form.addEventListener("submit", async (e) => {
-        e.preventDefault();
-
-        const target = e.target as any;
-        const email = target.email.value;
-        cs.email = email;
+      // async function test() {
+      //   const res = await state.checkToken();
+      //   //rta /ingresar o undefined
+      //   console.log(res);
+      //   if (res != undefined) {
+      //     Router.go(res);
+      //   }
+      // }
+      // test();
+      const savedToken = sessionStorage.getItem("token");
+      if (savedToken) {
+        console.log("tengo el tocken");
+      } else {
+        cs.lastPage = location.pathname;
         state.setState(cs);
-        const user = await state.checkUserExist();
-        if (user != undefined) {
-          renderPsw(contaier);
-        } else {
-          Router.go("/mis-datos");
-        }
-      });
+        Router.go("/ingresar");
+      }
     }
 
     render() {
       const style = document.createElement("style");
 
       this.innerHTML = `
-      <div class="sign-in">
+      <div class="mis-datos">
       <header-el></header-el>
       <div class="content-cont">
-        <h3 class="title">Ingresar</h3>
+        <h3 class="title">Mis datos</h3>
         <form class="form-cont">
           <label class="label"
-            >EMAIL<input class="input" type="text" name="email"
+            >NOMBRE<input class="input" type="text" name="email"
           /></label>
+
+          <div class="psw-cont">
+            <label class="label"
+              >CONTRASEÑA<input class="input" type="password" name="psw"
+            /></label>
+
+            <label class="label"
+              >REPETIR CONTRASEÑA<input
+                class="input"
+                type="password"
+                name="re-psw"
+            /></label>
+          </div>
+
           <div class="button-cont">
             <button class="button">Siguiente</button>
           </div>
@@ -77,7 +66,7 @@ customElements.define(
       `;
 
       style.textContent = `
-      .sign-in{
+      .mis-datos{
         font-family: 'Roboto', sans-serif;
       }
 
@@ -94,6 +83,7 @@ customElements.define(
         margin:30px;
         text-align: center;
       }
+      
       
       .form-cont{
         max-width: 351px;
@@ -112,6 +102,10 @@ customElements.define(
         height:40px;
         max-width: 351px;
         font-size:21px;
+      }
+
+      .psw-cont{
+        margin-top:40px;
       }
 
       .button-cont{

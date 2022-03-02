@@ -42,7 +42,7 @@ customElements.define(
         });
 
         div.querySelector(".mis-datos").addEventListener("click", () => {
-          Router.go("/ingresar");
+          Router.go("/mis-datos");
         });
         div.querySelector(".mis-mascotas").addEventListener("click", () => {
           Router.go("/ingresar");

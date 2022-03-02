@@ -8,9 +8,12 @@ body {
 
 .asd {
   height: 100vh;
-  display: flex;
   align-items: center;
   justify-content: space-between;
-
-  min-height: 400px;
+  position: fixed;
+  min-height: 92vh;
+  text-align: center;
+  display: flex;
+  align-items: flex-end;
+  align-self: flex-end;
 }

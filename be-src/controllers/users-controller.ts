@@ -1,6 +1,10 @@
 import { User, Auth, Pet, Report } from "../models";
 import * as crypto from "crypto";
 import { index } from "../lib/algolia";
+import * as jwt from "jsonwebtoken";
+
+const SECRET = "dfgjk3lq45hñfjk324";
+const secret = process.env.JWT_SECRET;
 
 //import { cloudinary } from "../lib/cloudinary";
 
@@ -35,6 +39,53 @@ export async function createUser(
   return { user, auth };
 }
 
+export async function getUser(email: string) {
+  if (!email) {
+    throw "email es necesario";
+  } else {
+    const user = await User.findOne({ where: { email: email } });
+    if (user == null) {
+      return "user doesn't exist";
+    } else {
+      return user;
+    }
+  }
+}
+
+export async function logIn(userParams) {
+  const { email, password } = userParams;
+  const passwordHashed = getSHA256ofString(password);
+
+  const auth = await Auth.findOne({
+    where: { email, password: passwordHashed },
+  });
+
+  if (auth === null) {
+    return { error: "email or pass incorrect" };
+  } else {
+    const token = jwt.sign({ id: auth.get("user_id") }, secret);
+    return token;
+  }
+}
+
+export function authMiddleware(req, res, next) {
+  const splitted = req.headers.authorization.split(" ");
+  const token = splitted[1];
+
+  try {
+    const data = jwt.verify(token, SECRET);
+    req._user = data;
+    next();
+  } catch (e) {
+    throw "error";
+  }
+}
+
+export async function me(params) {
+  const user = await User.findByPk(params.id);
+  return user;
+}
+
 export async function getAllUsers() {
   if (null) {
     throw "no hay usuarios aun";
@@ -60,12 +111,14 @@ export async function pushLostPet(userId, petData) {
       const algoliaRes = await index.saveObject({
         objectID: pet.get("id"),
         name: pet.get("name"),
-
+        imageURL: pet.get("imageURL"),
         _geoloc: {
           lat: pet.get("last_location_lat"),
           lng: pet.get("last_location_lgn"),
         },
       });
+      console.log(pet, algoliaRes);
+
       return { pet, algoliaRes };
     }
   }

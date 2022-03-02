@@ -5,6 +5,7 @@
   "author": "JoaquinGiacusa <joaquingiacusa.dev@gmail.com>",
   "license": "MIT",
   "dependencies": {
+    "@sendgrid/mail": "^7.6.1",
     "@types/node": "^17.0.18",
     "@vaadin/router": "^1.7.4",
     "algoliasearch": "^4.12.1",
