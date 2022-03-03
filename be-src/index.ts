@@ -113,7 +113,3 @@ app.get("*", (req, res) => {
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`);
 });
-
-//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
-
-//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
