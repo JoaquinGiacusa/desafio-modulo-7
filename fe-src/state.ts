@@ -56,7 +56,7 @@ export const state = {
     const res = await fetch(API_BASE_URL + "/users/" + cs.email);
     const data = await res.json();
     if (data == "user doesn't exist") {
-      console.error(data);
+      //console.error(data);
     } else {
       cs.fullName = data.fullName;
       this.setState(cs);
@@ -84,22 +84,83 @@ export const state = {
           if (data.token.hasOwnProperty("error")) {
           } else {
             console.log(data);
-            sessionStorage.setItem("token", "bearer " + data.token);
+            sessionStorage.setItem("token", data.token);
             callback();
           }
         });
     }
   },
 
-  async checkToken() {
+  createUser(fullName, email, psw) {
+    console.log("STATE", fullName, email, psw);
+
+    fetch(API_BASE_URL + "/auth", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        fullName,
+        email,
+        password: psw,
+      }),
+    })
+      .then((res) => {
+        return res.json();
+      })
+      .then((data) => {
+        console.log(data);
+      });
+  },
+
+  updateUser(fullName, psw?) {
+    console.log("STATE", fullName, psw);
+    const savedToken = sessionStorage.getItem("token");
+
+    fetch(API_BASE_URL + "/update-profile", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        Authorization: "bearer " + savedToken,
+      },
+      body: JSON.stringify({
+        fullName,
+        password: psw,
+      }),
+    })
+      .then((res) => {
+        return res.json();
+      })
+      .then((data) => {
+        console.log(data);
+      });
+  },
+
+  async getProfile(callback) {
     const cs = this.getState();
     const savedToken = sessionStorage.getItem("token");
-    if (!savedToken) {
-      cs.lastPage = location.pathname;
-      this.setState(cs);
-      return "/ingresar";
-    }
+    const res = await fetch(API_BASE_URL + "/profile", {
+      method: "GET",
+      headers: {
+        "content-type": "application/json",
+        Authorization: "bearer " + savedToken,
+      },
+    });
+    const data = await res.json();
+
+    cs.fullName = data.fullName;
+    cs.email = data.email;
+    this.setState(cs);
+    callback();
   },
+
+  // async checkToken() {
+  //   const cs = this.getState();
+  //   const savedToken = sessionStorage.getItem("token");
+  //   if (!savedToken) {
+  //     cs.lastPage = location.pathname;
+  //     this.setState(cs);
+  //     return "/ingresar";
+  //   }
+  // },
 
   async getNearPets() {
     const cs = this.getState();

@@ -11,6 +11,7 @@ import {
   logIn,
   me,
   authMiddleware,
+  updateProfile,
 } from "./controllers/users-controller";
 
 //pet-controller
@@ -36,10 +37,12 @@ app.get("/test", async (req, res) => {
 //signup
 app.post("/auth", async (req, res) => {
   const { fullName, email, password } = req.body;
+  console.log("BODY", req.body);
 
   const user = await createUser(fullName, email, password);
+  console.log(user);
 
-  res.json(user);
+  res.json({ user });
 });
 
 app.get("/users", async (req, res) => {
@@ -82,8 +85,6 @@ app.get("/mascotas-cerca-de", async (req, res) => {
 
 //reportar info de mascota
 app.post("/report", async (req, res) => {
-  console.log("BODYYYYYYYY", req.body);
-
   const report = await createReport(req.body);
   console.log(report);
 
@@ -96,19 +97,42 @@ app.get("/reports", async (req, res) => {
   res.json(AllReports);
 });
 
-app.get("/me", authMiddleware, async (req, res) => {
+app.get("/profile", authMiddleware, async (req, res) => {
   const user = await me(req["_user"].id);
   res.json(user);
 });
 
+//actualizar perfil
+app.post("/update-profile", authMiddleware, async (req, res) => {
+  if (!req.body) {
+    res.status(400).json({
+      message: "me faltan datos en el body",
+    });
+  }
+  console.log(req.body);
+
+  const { fullName, password } = req.body;
+  console.log(fullName, password);
+
+  const userId = req["_user"].id;
+
+  if (password == undefined) {
+    const updatedData = await updateProfile(userId, fullName);
+    res.json(updatedData);
+  } else if (password != undefined) {
+    const updatedData = await updateProfile(userId, fullName, password);
+    res.json(updatedData);
+  }
+});
+
 //---->
 //to fe
-app.use(express.static("dist"));
-const rutaRelativa = path.resolve(__dirname, "../dist/", "index.html");
+// app.use(express.static("dist"));
+// const rutaRelativa = path.resolve(__dirname, "../dist/", "index.html");
 
-app.get("*", (req, res) => {
-  res.sendFile(rutaRelativa);
-});
+// app.get("*", (req, res) => {
+//   res.sendFile(rutaRelativa);
+// });
 
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`);

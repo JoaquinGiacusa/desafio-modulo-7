@@ -8,27 +8,57 @@ customElements.define(
       super();
     }
     connectedCallback() {
+      this.render();
       const cs = state.getState();
 
-      this.render();
-
-      // async function test() {
-      //   const res = await state.checkToken();
-      //   //rta /ingresar o undefined
-      //   console.log(res);
-      //   if (res != undefined) {
-      //     Router.go(res);
-      //   }
-      // }
-      // test();
       const savedToken = sessionStorage.getItem("token");
       if (savedToken) {
-        console.log("tengo el tocken");
-      } else {
+        state.getProfile(() => {
+          const form = this.querySelector(".form-cont");
+          form["fullname"].value = cs.fullName;
+
+          //state.updateUser()
+        });
+      } else if (!savedToken && cs.email == "") {
+        console.log("EMAIL");
+
         cs.lastPage = location.pathname;
         state.setState(cs);
         Router.go("/ingresar");
       }
+
+      const form = this.querySelector(".form-cont");
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+
+        const target = e.target as any;
+        const fullName = target.fullname.value;
+        const psw = target.psw.value;
+        const rePsw = target["re-psw"].value;
+
+        if (savedToken && fullName != cs.fullName && psw == "") {
+          console.log("1");
+
+          state.updateUser(fullName);
+        } else if (fullName == "" || psw == "") {
+          window.alert("Debes completar todos los campos");
+        } else if (psw != rePsw) {
+          window.alert("Las contraseñas no coinciden");
+        } else if (psw === rePsw) {
+          //para cambiar nombre y contraseña juntos
+          if (psw != "" && savedToken) {
+            console.log("aca");
+            state.updateUser(fullName, psw);
+          } else if (!savedToken && fullName != "" && psw != "") {
+            state.createUser(fullName, cs.email, psw);
+            console.log("USUARIO CREADO");
+            window.alert("Usuario creado exitosamente");
+            state.signIn(psw, () => {
+              Router.go("/");
+            });
+          }
+        }
+      });
     }
 
     render() {
@@ -41,7 +71,7 @@ customElements.define(
         <h3 class="title">Mis datos</h3>
         <form class="form-cont">
           <label class="label"
-            >NOMBRE<input class="input" type="text" name="email"
+            >NOMBRE<input class="input" type="text" name="fullname"
           /></label>
 
           <div class="psw-cont">

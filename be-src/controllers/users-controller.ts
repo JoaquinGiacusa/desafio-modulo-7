@@ -3,7 +3,6 @@ import * as crypto from "crypto";
 import { index } from "../lib/algolia";
 import * as jwt from "jsonwebtoken";
 
-const SECRET = "dfgjk3lq45hñfjk324";
 const secret = process.env.JWT_SECRET;
 
 //import { cloudinary } from "../lib/cloudinary";
@@ -36,7 +35,7 @@ export async function createUser(
       userId: user.get("id"),
     },
   });
-  return { user, auth };
+  return { user, auth, created, authCreated };
 }
 
 export async function getUser(email: string) {
@@ -63,7 +62,7 @@ export async function logIn(userParams) {
   if (auth === null) {
     return { error: "email or pass incorrect" };
   } else {
-    const token = jwt.sign({ id: auth.get("user_id") }, secret);
+    const token = jwt.sign({ id: auth.get("userId") }, secret);
     return token;
   }
 }
@@ -73,7 +72,7 @@ export function authMiddleware(req, res, next) {
   const token = splitted[1];
 
   try {
-    const data = jwt.verify(token, SECRET);
+    const data = jwt.verify(token, secret);
     req._user = data;
     next();
   } catch (e) {
@@ -82,8 +81,32 @@ export function authMiddleware(req, res, next) {
 }
 
 export async function me(params) {
-  const user = await User.findByPk(params.id);
+  const user = await User.findByPk(params);
+
   return user;
+}
+
+export async function updateProfile(userId, fullName, password?) {
+  console.log(password);
+
+  if (password != undefined) {
+    const passwordHashed = getSHA256ofString(password);
+    console.log("USER_C", userId, fullName, password);
+
+    if (fullName && password) {
+      const user = await User.update({ fullName }, { where: { id: userId } });
+      const auth = await Auth.update(
+        { password: passwordHashed },
+        { where: { userId: userId } }
+      );
+      return { user, auth };
+    }
+  } else if (password == undefined) {
+    if (fullName) {
+      const user = await User.update({ fullName }, { where: { id: userId } });
+      return { user };
+    }
+  }
 }
 
 export async function getAllUsers() {
