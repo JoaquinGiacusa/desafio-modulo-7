@@ -3,11 +3,9 @@ import { index } from "../lib/algolia";
 import { sgMail } from "../lib/sendGrid";
 
 export async function lostPets(lat, lng) {
-  console.log(lat, lng);
-
   const { hits } = await index.search("", {
     aroundLatLng: [lat, lng].join(","),
-    aroundRadius: 1500,
+    aroundRadius: 3000,
   });
 
   return hits;
@@ -43,13 +41,12 @@ export async function createReport(reportParams) {
   if (!reportParams.petId) {
     throw "faltan el petId de la mascota a reportar";
   } else {
-    //console.log(reportParams);
-
     const pet = await Pet.findByPk(reportParams.petId, { include: User });
 
     ///send-mail////////////////////////////
 
     const mailTo = pet["user"].email;
+
     const message = reportParams.lastSeen;
     const phoneNum = reportParams.phoneNum;
     const fullName = reportParams.fullName;

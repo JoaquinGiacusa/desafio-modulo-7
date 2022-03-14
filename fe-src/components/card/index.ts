@@ -1,3 +1,4 @@
+import { Router } from "@vaadin/router";
 import { state } from "../../state";
 
 customElements.define(
@@ -8,6 +9,8 @@ customElements.define(
     name: string;
     loc: string;
     petId;
+    function: string;
+
     constructor() {
       super();
       this.shadow = this.attachShadow({ mode: "open" });
@@ -21,85 +24,115 @@ customElements.define(
       // });
     }
     render() {
+      const cs = state.getState();
       const div = document.createElement("div");
       const style = document.createElement("style");
       this.name = this.getAttribute("name");
-      this.loc = this.getAttribute("loc") || "MENDOZA";
+      this.loc = this.getAttribute("loc");
       this.imageURL = this.getAttribute("imageURL");
       this.petId = this.getAttribute("petId");
+      this.function = this.getAttribute("function") || "report";
 
-      div.innerHTML = `
+      if (this.function == "edit") {
+        div.innerHTML = `
 
-      <div class="card">
-      <img src="${this.imageURL}" width="300" height="200" />
-      <div class="card-content">
+        <div class="card">
+        <img src="${this.imageURL}" width="300" height="200" />
+        <div class="card-content">
+          <div class="pet-info">
+            <h2 class="pet-name">${this.name}</h2>
+            <p class="ubi-pet">${this.loc}</p>
+          </div>
+          <div class="report">
+            <a class="report-link" href="">Editar/Eliminar</a>
+          </div>
+        </div>
+        `;
+
+        const report = div.querySelector(".report-link");
+        report.addEventListener("click", () => {
+          //state.setPetId(this.petId);
+          cs.lastPage = location.pathname;
+          cs.petId = this.petId;
+          state.setState(cs);
+
+          state.getOnePetById(this.petId, () => {
+            Router.go("/edit-lost-pet");
+          });
+        });
+      } else if (this.function == "report") {
+        div.innerHTML = `
+        
+        <div class="card">
+        <img src="${this.imageURL}" width="300" height="200" />
+        <div class="card-content">
         <div class="pet-info">
-          <h2 class="pet-name">${this.name}</h2>
-          <p>${this.loc}</p>
+        <h2 class="pet-name">${this.name}</h2>
+        <p class="ubi-pet">${this.loc}</p>
         </div>
         <div class="report">
-          <a class="report-link" href="">REPORTAR INFORMACIÓN</a>
+        <a class="report-link" href="">REPORTAR INFORMACIÓN</a>
         </div>
-      </div>
-      <div class="modal">
+        </div>
+        <div class="modal">
         <form class="form">
-          <h2 class="title">Reportar info de ${this.name}</h2>
-          <label>
-            <h2 class="label">Nombre</h2>
-            <input type="text" class="input" name="fullname" />
-          </label>
-          <label>
-            <h2 class="label">Tu teléfono</h2>
-            <input type="text" class="input" name="phoneNum" />
-          </label>
-          <label>
-            <h2 class="label">¿Donde lo viste?</h2>
-            <textarea class="desc" name="lastSeen"></textarea>
-          </label>
-          <div class="btn-form-container">
-          <button class="send-button">Enviar</button>
-          </div>
-          <div class="cerrar-container">
-          <p></p>
-          <p class="cerrar">Cerrar</p>
-          </div>
+        <h2 class="title">Reportar info de ${this.name}</h2>
+        <label>
+        <h2 class="label">Nombre</h2>
+        <input type="text" class="input" name="fullname" />
+        </label>
+        <label>
+        <h2 class="label">Tu teléfono</h2>
+        <input type="text" class="input" name="phoneNum" />
+        </label>
+        <label>
+        <h2 class="label">¿Donde lo viste?</h2>
+        <textarea class="desc" name="lastSeen"></textarea>
+        </label>
+        <div class="btn-form-container">
+        <button class="send-button">Enviar</button>
+        </div>
+        <div class="cerrar-container">
+        <p></p>
+        <p class="cerrar">Cerrar</p>
+        </div>
         </form>
-      </div>
-    </div>
-          `;
-      // const test = parseInt(this.petId);
-      // console.log(test);
+        </div>
+        </div>
+        `;
+        // const test = parseInt(this.petId);
+        // console.log(test);
 
-      const report = div.querySelector(".report-link");
-      report.addEventListener("click", () => {
-        const modal = div.querySelector(".modal");
-        modal["style"].display = "inherit";
+        const report = div.querySelector(".report-link");
+        report.addEventListener("click", () => {
+          const modal = div.querySelector(".modal");
+          modal["style"].display = "inherit";
 
-        const form = div.querySelector(".form");
-        form.addEventListener("submit", (e) => {
-          e.preventDefault();
-          const target = e.target as any;
-          const name = target.fullname.value;
-          const phoneNum = target.phoneNum.value;
-          const lastSeen = target.lastSeen.value;
+          const form = div.querySelector(".form");
+          form.addEventListener("submit", (e) => {
+            e.preventDefault();
+            const target = e.target as any;
+            const name = target.fullname.value;
+            const phoneNum = target.phoneNum.value;
+            const lastSeen = target.lastSeen.value;
 
-          if (this.petId) {
-            state.setReportInfo({
-              fullName: name,
-              lastSeen: lastSeen,
-              petId: Number(this.petId),
-              phoneNum: phoneNum,
-            });
-          }
+            if (this.petId) {
+              state.setReportInfo({
+                fullName: name,
+                lastSeen: lastSeen,
+                petId: Number(this.petId),
+                phoneNum: phoneNum,
+              });
+            }
+          });
         });
-      });
 
-      const cerrar = div.querySelector(".cerrar");
-      cerrar.addEventListener("click", () => {
-        const modal = div.querySelector(".modal");
-        modal["style"].display = "none";
-      });
-
+        const cerrar = div.querySelector(".cerrar");
+        cerrar.addEventListener("click", () => {
+          const modal = div.querySelector(".modal");
+          modal["style"].display = "none";
+        });
+      }
       style.textContent = `
         .card{
           border: solid 2px black;
@@ -190,6 +223,13 @@ customElements.define(
         .cerrar{
           color:blue;
           cursor:pointer;
+        }
+        .ubi-pet{
+          font-size:13px;
+        }
+
+        .pet-info{
+          max-width: 150px;
         }
         `;
 

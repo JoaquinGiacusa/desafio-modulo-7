@@ -10,6 +10,7 @@ customElements.define(
     connectedCallback() {
       this.render();
       const cs = state.getState();
+
       const form = this.querySelector(".form-cont");
       const contaier = this.querySelector(".content-cont");
 

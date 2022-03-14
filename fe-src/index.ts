@@ -10,8 +10,6 @@ import "./components/card";
 import "./pages/home";
 import "./pages/signIn";
 import "./pages/mis-datos";
-
-// console.log(cs);
-
-// state.setState((state.getState().petsNear = "soy una mascotita anashei"));
-// console.log(cs);
+import "./pages/report-pet";
+import "./pages/edit-lost-pet";
+import "./pages/my-pets";

@@ -20,12 +20,13 @@ customElements.define(
 
       div.innerHTML = `
     <div class="header">
-      <img src="${petHandImg}" />
+      <img class="hand-img" src="${petHandImg}" />
       <img class="burger" src="${burgerImg}" />
     </div>
 
     <div class="menu">
-      <div class="menu-content">
+    <div class="menu-content">
+    <div class="cerrar">Cerrar</div>
         <div class="link-container">
           <a class="mis-datos">Mis datos</a>
           <a class="mis-mascotas">Mis mascotas reportadas</a>
@@ -35,6 +36,11 @@ customElements.define(
     </div>
           `;
 
+      const mano = div.querySelector(".hand-img");
+      mano.addEventListener("click", () => {
+        Router.go("/");
+      });
+
       function openMenu() {
         const burger = div.querySelector(".burger");
         burger.addEventListener("click", () => {
@@ -42,13 +48,24 @@ customElements.define(
         });
 
         div.querySelector(".mis-datos").addEventListener("click", () => {
-          Router.go("/mis-datos");
+          if (location.pathname == "/mis-datos") {
+            div.querySelector(".menu")["style"].display = "none";
+          } else {
+            Router.go("/mis-datos");
+          }
         });
         div.querySelector(".mis-mascotas").addEventListener("click", () => {
-          Router.go("/ingresar");
+          Router.go("/my-pets");
         });
         div.querySelector(".reportar").addEventListener("click", () => {
-          Router.go("/ingresar");
+          if (location.pathname == "/report-pet") {
+            div.querySelector(".menu")["style"].display = "none";
+          } else {
+            Router.go("/report-my-pet");
+          }
+        });
+        div.querySelector(".cerrar").addEventListener("click", () => {
+          div.querySelector(".menu")["style"].display = "none";
         });
       }
 
@@ -64,12 +81,14 @@ customElements.define(
 
       .menu{
         display: none;
-        position: absolute;
+        position: fixed;
         top: 0;
         right: 0;
         left: 0;
         bottom: 0;
         background-color: #1C658C;
+        height: 100vh;
+        z-index: 100;
         }
 
         .menu-content{
@@ -77,6 +96,13 @@ customElements.define(
             height: 100vh;
             align-items: center;
             justify-content: center;
+        }
+
+        .cerrar{
+          color:white;
+          position:absolute;
+          top:10px;
+          right:10px;
         }
 
      .link-container{

@@ -1,5 +1,5 @@
 import { Router } from "@vaadin/router";
-import { timeEnd } from "console";
+
 import { state } from "../../state";
 
 customElements.define(
@@ -29,19 +29,23 @@ customElements.define(
           const petName = pet.name;
           const petImgUrl = pet.imageURL;
           const petId = pet.objectID;
+          const loc = pet.lastSeen;
           //console.log("petId", petId);
 
           const cardEl =
             "<card-el " +
             "name=" +
             petName +
-            " imageURL=" +
+            " loc='" +
+            loc +
+            "' imageURL=" +
             petImgUrl +
             " petId=" +
             petId +
             "></card-el>";
 
           cards.push(cardEl);
+          console.log(cardEl);
         }
 
         return cards.join("");
@@ -49,7 +53,8 @@ customElements.define(
 
       async function checkPets() {
         if (cs.petsNear == "") {
-          home.innerHTML = `
+          const container = document.querySelector(".container-content");
+          container.innerHTML = `
           <h2>No hay mascotas cerca de tu ubicacion actual</h2>
           `;
         } else {
@@ -71,10 +76,9 @@ customElements.define(
         .then(function (result) {
           //si tengo ya el permiso de loc
           if (result.state === "granted") {
-            getMyLoc(() => {
-              state.getNearPets().then(() => {
-                checkPets();
-              });
+            getMyLoc(async () => {
+              await state.getNearPets();
+              checkPets();
             });
           }
           //si no tengo la loc:

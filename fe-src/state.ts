@@ -1,5 +1,3 @@
-import { LOADIPHLPAPI } from "dns";
-
 const API_BASE_URL = process.env.API_BASE_URL || "http://localhost:3005";
 
 export const state = {
@@ -12,7 +10,18 @@ export const state = {
     },
     petsNear: "",
     lastPage: "",
-
+    myPets: "",
+    //
+    petId: "",
+    reportMyLostPet: {
+      name: "",
+      imageURL: "",
+      last_location_lat: "",
+      last_location_lng: "",
+      lastSeen: "",
+      lostStatus: "",
+    },
+    //
     reportInfo: {
       fullName: "",
       phoneNum: "",
@@ -50,6 +59,12 @@ export const state = {
     this.setState(cs);
   },
 
+  // setPetId(petId) {
+  //   const cs = this.getState();
+  //   cs.petId = petId;
+  //   this.setState(cs);
+  // },
+
   async checkUserExist() {
     const cs = this.getState();
 
@@ -83,7 +98,6 @@ export const state = {
         .then((data) => {
           if (data.token.hasOwnProperty("error")) {
           } else {
-            console.log(data);
             sessionStorage.setItem("token", data.token);
             callback();
           }
@@ -92,8 +106,6 @@ export const state = {
   },
 
   createUser(fullName, email, psw) {
-    console.log("STATE", fullName, email, psw);
-
     fetch(API_BASE_URL + "/auth", {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -112,7 +124,6 @@ export const state = {
   },
 
   updateUser(fullName, psw?) {
-    console.log("STATE", fullName, psw);
     const savedToken = sessionStorage.getItem("token");
 
     fetch(API_BASE_URL + "/update-profile", {
@@ -152,16 +163,6 @@ export const state = {
     callback();
   },
 
-  // async checkToken() {
-  //   const cs = this.getState();
-  //   const savedToken = sessionStorage.getItem("token");
-  //   if (!savedToken) {
-  //     cs.lastPage = location.pathname;
-  //     this.setState(cs);
-  //     return "/ingresar";
-  //   }
-  // },
-
   async getNearPets() {
     const cs = this.getState();
     const lat = cs.geoLoc.lat;
@@ -172,18 +173,23 @@ export const state = {
         API_BASE_URL + "/mascotas-cerca-de" + "?lat=" + lat + "&lng=" + lng
       );
       const data = await res.json();
-      console.log("DATA zs", data);
-      const test = data[1].objectID;
 
-      cs.petsNear = data;
-      this.setState(cs);
+      if (data) {
+        const petsNear = data.filter((pet) => {
+          return pet.lostStatus == true;
+        });
+
+        cs.petsNear = petsNear;
+        this.setState(cs);
+      } else {
+        cs.petsNear = data;
+        this.setState(cs);
+      }
     } else {
       throw "falta lat y long";
     }
   },
-  /* 
-////////////////BUSCAR EL STRING NUMERO DE LA FUNCION D ABAJO
-*/
+
   async setReportInfo(reportParams) {
     const cs = this.getState();
     cs.reportInfo = reportParams;
@@ -195,19 +201,154 @@ export const state = {
       body: JSON.stringify(cs.reportInfo),
     });
     const data = await res.json();
-    console.log("DATITAA", data);
+    console.log(data);
   },
 
-  // getMyLoc(callback?) {
-  //   const cs = this.getState();
+  setGeoLoc(lat, lng) {
+    const cs = this.getState();
+    (cs.reportMyLostPet.last_location_lat = lat.toString()),
+      (cs.reportMyLostPet.last_location_lng = lng.toString()),
+      this.setState(cs);
+  },
 
-  //   const coor = navigator.geolocation.getCurrentPosition(function (pos) {
-  //     //return pos.coords.latitude, pos.coords.longitude;
+  createALostPet(callback?) {
+    const cs = this.getState();
+    const savedToken = sessionStorage.getItem("token");
 
-  //     cs.geoLoc.lat = pos.coords.latitude;
-  //     cs.geoLoc.lng = pos.coords.longitude;
-  //     state.setState(cs);
-  //   });
-  //   callback();
-  // },
+    fetch(API_BASE_URL + "/pet", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        Authorization: "bearer " + savedToken,
+      },
+      body: JSON.stringify(cs.reportMyLostPet),
+    })
+      .then((res) => {
+        return res.json();
+      })
+      .then((data) => {
+        console.log(data);
+        callback();
+      });
+  },
+
+  editLostPet(callback?) {
+    const savedToken = sessionStorage.getItem("token");
+    const cs = this.getState();
+    const petId = cs.petId;
+    const updatedPetInfo = cs.reportMyLostPet;
+
+    fetch(API_BASE_URL + "/update-pet", {
+      method: "PUT",
+      headers: {
+        "content-type": "application/json",
+        Authorization: "bearer " + savedToken,
+      },
+      body: JSON.stringify({ petId, updatedPetInfo }),
+    })
+      .then((res) => {
+        return res.json();
+      })
+      .then((data) => {
+        console.log(data);
+        callback();
+      });
+  },
+
+  markFound(callback?) {
+    const savedToken = sessionStorage.getItem("token");
+    const cs = this.getState();
+    const petId = cs.petId;
+    const updatedPetInfo = cs.reportMyLostPet;
+
+    fetch(API_BASE_URL + "/mark-found/" + petId, {
+      method: "PUT",
+      headers: {
+        "content-type": "application/json",
+        Authorization: "bearer " + savedToken,
+      },
+    })
+      .then((res) => {
+        return res.json();
+      })
+      .then((data) => {
+        console.log(data);
+        callback();
+      });
+  },
+
+  deletePet(callback?) {
+    const cs = this.getState();
+    const savedToken = sessionStorage.getItem("token");
+    const petId = cs.petId;
+
+    fetch(API_BASE_URL + "/delet-pet/" + petId, {
+      method: "DELETE",
+      headers: {
+        "content-type": "application/json",
+        Authorization: "bearer " + savedToken,
+      },
+    })
+      .then((res) => {
+        return res.json();
+      })
+      .then((data) => {
+        console.log(data);
+        callback();
+      });
+  },
+
+  getMyPets(callback) {
+    const cs = this.getState();
+    const savedToken = sessionStorage.getItem("token");
+
+    fetch(API_BASE_URL + "/my-pets", {
+      headers: {
+        "content-type": "application/json",
+        Authorization: "bearer " + savedToken,
+      },
+    })
+      .then((res) => {
+        return res.json();
+      })
+      .then((data) => {
+        console.log("Todos", data);
+
+        if (data != undefined) {
+          const petsLost = data.filter((pet) => {
+            return pet.lostStatus == true;
+          });
+
+          cs.myPets = petsLost;
+          this.setState(cs);
+        } else {
+          cs.myPets = data;
+          this.setState(cs);
+        }
+        callback();
+      });
+  },
+
+  getOnePetById(petId, callback?) {
+    const cs = this.getState();
+    const savedToken = sessionStorage.getItem("token");
+
+    fetch(API_BASE_URL + "/pet/" + petId, {
+      headers: {
+        "content-type": "application/json",
+        Authorization: "bearer " + savedToken,
+      },
+    })
+      .then((res) => {
+        return res.json();
+      })
+      .then((data) => {
+        cs.reportMyLostPet.name = data.name;
+        cs.reportMyLostPet.imageURL = data.imageURL;
+        cs.reportMyLostPet.last_location_lat = data.last_location_lat;
+        cs.reportMyLostPet.last_location_lng = data.last_location_lng;
+        this.setState(cs);
+        callback();
+      });
+  },
 };

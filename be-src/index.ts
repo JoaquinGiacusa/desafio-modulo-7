@@ -12,6 +12,11 @@ import {
   me,
   authMiddleware,
   updateProfile,
+  myPets,
+  onePet,
+  updatePetInfo,
+  deletPet,
+  markFound,
 } from "./controllers/users-controller";
 
 //pet-controller
@@ -37,10 +42,7 @@ app.get("/test", async (req, res) => {
 //signup
 app.post("/auth", async (req, res) => {
   const { fullName, email, password } = req.body;
-  console.log("BODY", req.body);
-
   const user = await createUser(fullName, email, password);
-  console.log(user);
 
   res.json({ user });
 });
@@ -59,26 +61,70 @@ app.get("/users/:email", async (req, res) => {
 
 //signin or login
 app.post("/auth/token", async (req, res) => {
-  console.log(req.body);
-
   const token = await logIn(req.body);
 
   res.json({ token });
 });
 
 //publicar mascota perdida
-app.post("/pet", async (req, res) => {
-  const pet = await pushLostPet(2, req.body);
-  console.log(pet);
+app.post("/pet", authMiddleware, async (req, res) => {
+  const userId = req["_user"].id;
+  const pet = await pushLostPet(userId, req.body);
 
-  res.json(pet);
+  res.json({ pet });
+});
+
+app.put("/update-pet", authMiddleware, async (req, res) => {
+  const userId = req["_user"].id;
+  const updatedPetInfo = req.body.updatedPetInfo;
+  const petId = req.body.petId;
+
+  const petEdited = await updatePetInfo(userId, petId, updatedPetInfo);
+
+  res.json(petEdited);
+});
+
+app.put("/mark-found/:petId", authMiddleware, async (req, res) => {
+  const userId = req["_user"].id;
+  const petId = req.params.petId;
+
+  const petEdited = await markFound(userId, petId);
+
+  res.json(petEdited);
+});
+
+app.delete("/delet-pet/:petId", authMiddleware, async (req, res) => {
+  const userId = req["_user"].id;
+  const petId = req.params.petId;
+
+  const deletStatus = await deletPet(userId, petId);
+
+  res.json(deletStatus);
+});
+
+//mascotas de cada usuario
+app.get("/my-pets", authMiddleware, async (req, res) => {
+  const userId = req["_user"].id;
+
+  const allMyPets = await myPets(userId);
+
+  res.json(allMyPets);
+});
+
+//mascota por id
+app.get("/pet/:petId", authMiddleware, async (req, res) => {
+  const userId = req["_user"].id;
+  const petId = req.params.petId;
+
+  const onePetById = await onePet(userId, petId);
+
+  res.json(onePetById);
 });
 
 //mascotas cerca de mi
 app.get("/mascotas-cerca-de", async (req, res) => {
   const { lat, lng } = req.query;
   const lostPetsArround = await lostPets(lat, lng);
-  //console.log(lostPetsArround);
 
   res.json(lostPetsArround);
 });
@@ -86,7 +132,6 @@ app.get("/mascotas-cerca-de", async (req, res) => {
 //reportar info de mascota
 app.post("/report", async (req, res) => {
   const report = await createReport(req.body);
-  console.log(report);
 
   res.json({ message: "ok" });
 });
@@ -109,10 +154,8 @@ app.post("/update-profile", authMiddleware, async (req, res) => {
       message: "me faltan datos en el body",
     });
   }
-  console.log(req.body);
 
   const { fullName, password } = req.body;
-  console.log(fullName, password);
 
   const userId = req["_user"].id;
 
@@ -127,12 +170,12 @@ app.post("/update-profile", authMiddleware, async (req, res) => {
 
 //---->
 //to fe
-// app.use(express.static("dist"));
-// const rutaRelativa = path.resolve(__dirname, "../dist/", "index.html");
+app.use(express.static("dist"));
+const rutaRelativa = path.resolve(__dirname, "../dist/", "index.html");
 
-// app.get("*", (req, res) => {
-//   res.sendFile(rutaRelativa);
-// });
+app.get("*", (req, res) => {
+  res.sendFile(rutaRelativa);
+});
 
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`);
