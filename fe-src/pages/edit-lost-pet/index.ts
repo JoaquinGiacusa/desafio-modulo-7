@@ -109,11 +109,14 @@ customElements.define(
         });
 
         (function () {
+          const lat = cs.reportMyLostPet.last_location_lat;
+          const lng = cs.reportMyLostPet.last_location_lng;
+
           mapboxgl.accessToken = mapToken;
           const map = new mapboxgl.Map({
             container: "map", // container ID
             style: "mapbox://styles/mapbox/streets-v11", // style URL
-            center: [-60.708399, -31.622584], // starting position [lng, lat]
+            center: [lng || -60.708399, lat || -31.622584], // starting position [lng, lat]
             zoom: 9, // starting zoom
           });
 
@@ -129,8 +132,7 @@ customElements.define(
           });
 
           var marker1;
-          const lat = cs.reportMyLostPet.last_location_lat;
-          const lng = cs.reportMyLostPet.last_location_lng;
+
           if (lat != "" && lng != "") {
             marker1 = new mapboxgl.Marker().setLngLat([lng, lat]).addTo(map);
           } else {
