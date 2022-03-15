@@ -54,11 +54,13 @@ customElements.define(
                 return res.json();
               })
               .then((data) => {
-                const loc = data.features[0]["place_name"];
-
-                const finalLoc = loc.split(",");
-                //console.log(finalLoc.splice(1).join(","));
-                return finalLoc.splice(1).join(",");
+                if (data.features[0]) {
+                  const loc = data.features[0]["place_name"];
+                  const finalLoc = loc.split(",");
+                  return finalLoc.splice(1).join(",");
+                } else {
+                  return "Ubicacion desconocida";
+                }
               })
               .then((loc) => {
                 cs.reportMyLostPet.lastSeen = loc;
