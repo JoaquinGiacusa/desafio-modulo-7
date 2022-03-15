@@ -122,6 +122,12 @@ customElements.define(
           });
           map.addControl(geocoder);
 
+          geocoder.on("result", (e) => {
+            const lat = e.result.center[1];
+            const lng = e.result.center[0];
+            state.setGeoLoc(lat, lng);
+          });
+
           var marker1;
           const lat = cs.reportMyLostPet.last_location_lat;
           const lng = cs.reportMyLostPet.last_location_lng;
