@@ -1,5 +1,5 @@
-# desafio-modulo-7
+#### | API REST | EXPRESS | MVC |  PostgreSQL | Sequelize | Algolia(Geoloc) | SendGrid | MapBox | Cloudinary | HEROKU
 
-HEROKU: https://desafio-modulo7.herokuapp.com/
+LINK: https://desafio-modulo7.herokuapp.com/
 
 POSTMAN: https://documenter.getpostman.com/view/18442997/UVsJwSLd
